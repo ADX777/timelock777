@@ -4,11 +4,9 @@ from flask import Flask, request, jsonify
 
 app = Flask(__name__)
 
-# Lấy token bot và ID kênh từ biến môi trường Railway
 BOT_TOKEN = os.getenv("BOT_TOKEN")
-CHANNEL_ID = os.getenv("CHANNEL_ID")  # VD: -1001234567890
+CHANNEL_ID = os.getenv("CHANNEL_ID")  # Ví dụ: -1001234567890
 
-# Hàm gửi tin nhắn đến Telegram
 def send_message(text):
     url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
     payload = {
@@ -25,12 +23,10 @@ def send_message(text):
     except Exception as e:
         print(f"⚠️ Exception: {e}")
 
-# Route chính để kiểm tra bot sống
 @app.route("/")
 def home():
     return "🤖 Bot is running."
 
-# Route nhận yêu cầu từ web để gửi tin nhắn
 @app.route("/notify", methods=["POST"])
 def notify():
     data = request.json
@@ -42,7 +38,9 @@ def notify():
     send_message(message)
     return jsonify({"status": "ok"})
 
-# Gửi thông báo khi bot khởi động (chỉ chạy khi chạy local hoặc Railway dùng kiểu CMD)
+# ❗ Đặt bên ngoài if để Railway luôn chạy được dòng này
+send_message("🚀 Bot Telegram đã hoạt động trên Railway!")
+
+# 👇 Đoạn này chỉ chạy khi bạn test local (python bot.py)
 if __name__ == "__main__":
-    send_message("🚀 Bot Telegram đã hoạt động trên Railway!")
     app.run(host="0.0.0.0", port=8080)

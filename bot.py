@@ -4,9 +4,11 @@ from flask import Flask, request, jsonify
 
 app = Flask(__name__)
 
+# Lấy biến môi trường
 BOT_TOKEN = os.getenv("BOT_TOKEN")
-CHANNEL_ID = os.getenv("CHANNEL_ID")  # Ví dụ: -1001234567890
+CHANNEL_ID = os.getenv("CHANNEL_ID")
 
+# Hàm gửi tin nhắn đến Telegram
 def send_message(text):
     url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
     payload = {
@@ -14,19 +16,22 @@ def send_message(text):
         "text": text,
         "parse_mode": "HTML"
     }
+
+    print("📤 Đang gửi tin nhắn Telegram...")
+    print(f"➡️ Payload: {payload}")
     try:
         r = requests.post(url, json=payload)
-        if r.status_code == 200:
-            print("✅ Message sent successfully!")
-        else:
-            print(f"❌ Failed to send message: {r.text}")
+        print(f"✅ Trạng thái: {r.status_code}")
+        print(f"📩 Phản hồi: {r.text}")
     except Exception as e:
-        print(f"⚠️ Exception: {e}")
+        print(f"❌ Exception: {e}")
 
+# Trang chủ để test
 @app.route("/")
 def home():
     return "🤖 Bot is running."
 
+# API nhận dữ liệu từ web rồi gửi tin nhắn
 @app.route("/notify", methods=["POST"])
 def notify():
     data = request.json
@@ -38,9 +43,11 @@ def notify():
     send_message(message)
     return jsonify({"status": "ok"})
 
-# ❗ Đặt bên ngoài if để Railway luôn chạy được dòng này
-send_message("🚀 Bot Telegram đã hoạt động trên Railway!")
+# Khi Railway khởi động, hàm này sẽ chạy khi có request đầu tiên
+@app.before_first_request
+def startup():
+    send_message("🚀 Bot Telegram đã hoạt động trên Railway!")
 
-# 👇 Đoạn này chỉ chạy khi bạn test local (python bot.py)
+# Chỉ dùng khi chạy local
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8080)
